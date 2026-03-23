@@ -1,0 +1,14 @@
++ cachix push euler
+++ nix eval .#default.drvPath
+++ tr -d '\"'
+path '/home/kiransai-abhishek/repos/euler-api-gateway/forks/record-dot-preprocessor' does not contain a 'flake.nix', searching up
+error: path '/home/kiransai-abhishek/repos/euler-api-gateway/forks/record-dot-preprocessor' is not part of a flake (neither it nor its parent directories contain a 'flake.nix' file)
++ nix-store -qR --include-outputs ''
+error: path '/home/kiransai-abhishek/repos/euler-api-gateway/forks/record-dot-preprocessor' is not in the Nix store
+
+Neither auth token nor signing key are present.
+
+They are looked up via $CACHIX_AUTH_TOKEN and $CACHIX_SIGNING_KEY,
+and if missing also looked up from ~/.config/cachix/cachix.dhall
+
+Read https://mycache.cachix.org for instructions how to push to your binary cache.
