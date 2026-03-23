@@ -1,4 +1,55 @@
-# record-dot-preprocessor [![Hackage version](https://img.shields.io/hackage/v/record-dot-preprocessor.svg?label=Hackage)](https://hackage.haskell.org/package/record-dot-preprocessor) [![Stackage version](https://www.stackage.org/package/record-dot-preprocessor/badge/nightly?label=Stackage)](https://www.stackage.org/package/record-dot-preprocessor) [![Build status](https://img.shields.io/github/actions/workflow/status/ndmitchell/record-dot-preprocessor/ci.yml?branch=master)](https://github.com/ndmitchell/record-dot-preprocessor/actions)
+# remove-rdp-plugin
+
+This is a fork of [record-dot-preprocessor](https://github.com/ndmitchell/record-dot-preprocessor) that transforms record dot syntax (`expr.field`) into standard Haskell code **in-place**, eliminating the need for the preprocessor or GHC plugin at compile time.
+
+## What this tool does
+
+The `record-dot-preprocessor` uses a GHC plugin or preprocessor to transform record dot syntax at compile time. This fork provides a way to:
+
+1. **Transform** the record dot syntax (`c.name`, `c.owner.name`, `c{name = x}`) into standard Haskell using `getField` and `setField`
+2. **Replace** the original code with the transformed code in your source files
+3. **Remove** the dependency on `record-dot-preprocessor` as a build-time plugin/preprocessor
+
+This is useful when you want to:
+- Migrate away from `record-dot-preprocessor` without manually rewriting all record dot syntax
+- Commit the transformed code to your repository for easier builds
+- Avoid preprocessor/plugin dependencies in your build pipeline
+
+## Example Transformation
+
+**Original code:**
+```haskell
+data Company = Company {name :: String, owner :: Person}
+data Person = Person {name :: String, age :: Int}
+
+display :: Company -> String
+display c = c.name ++ " is run by " ++ c.owner.name
+
+nameAfterOwner :: Company -> Company
+nameAfterOwner c = c{name = c.owner.name ++ "'s Company"}
+```
+
+**Transformed code:**
+```haskell
+display c = getField @"name" c ++ " is run by " ++ getField @"name" (getField @"owner" c)
+
+nameAfterOwner c = setField @"name" c (getField @"name" (getField @"owner" c) ++ "'s Company")
+```
+
+## Usage
+
+Run the transformation tool on your Haskell source files. The tool will:
+1. Parse the source file
+2. Expand all record dot syntax
+3. Write the transformed code back to the file
+
+## Original Documentation
+
+Below is the original documentation from `record-dot-preprocessor` for reference:
+
+---
+
+# record-dot-preprocessor (Original)
 
 In almost every programming language `a.b` will get the `b` field from the `a` data type, and many different data types can have a `b` field. The reason this feature is ubiquitous is because it's _useful_. The `record-dot-preprocessor` brings this feature to modern GHC versions. This feature has been [proposed for Haskell](https://github.com/ghc-proposals/ghc-proposals/pull/282) as `RecordDotSyntax`. Since GHC 9.2 the [`OverloadedRecordDot`](https://downloads.haskell.org/~ghc/9.2.3/docs/html/users_guide/exts/overloaded_record_dot.html#extension-OverloadedRecordDot) and [`OverloadedRecordUpdate`](https://downloads.haskell.org/~ghc/9.2.3/docs/html/users_guide/exts/overloaded_record_update.html) extensions implement much the same functionality. Some examples:
 
